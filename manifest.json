@@ -1,0 +1,30 @@
+{
+  "name": "Resolvr",
+  "version": "1.0.0",
+  "manifest_version": 2,
+  "description": "Resolve Handshake domains + DNS TXT metadata records. Metadata records support Skynet, redirects, QR codes, and more.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "scripts": [
+      "src/lib/iana-tlds.js",
+      "src/lib/store.js",
+      "src/bg/settings.js",
+      "src/lib/resolvr.js",
+      "src/lib/transform/hns.js",
+      "src/lib/transform/skynet.js",
+      "src/lib/transform/qr.js",
+      "src/lib/transform/redirect.js",
+      "src/bg/background.js"
+    ],
+    "persistent": true
+  },
+  "browser_action": {
+    "default_icon": "icons/icon19.png",
+    "default_title": "Resolvr"
+  },
+  "permissions": ["webRequest", "webRequestBlocking", "<all_urls>", "tabs", "alarms", "proxy", "dns"]
+}
