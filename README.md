@@ -2,6 +2,10 @@
 
 Firefox browser extension to resolve Handshake domains + DNS TXT metadata records. Metadata records support Skynet, redirects, QR codes, and more.
 
+## Video
+
+  * [Video Overview](https://youtu.be/-ZOPTeFb0jw)
+
 ## Current Release
 
   * [Version 1.0.0](https://addons.mozilla.org/en-US/firefox/addon/resolvr/)
