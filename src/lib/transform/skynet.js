@@ -61,6 +61,10 @@ Resolvr.addTransform((type, result) => {
             result.data.push("redirect=https://" + SkynetSettings.get("portal") + "/" + data.substring(8));
         }
 
+        else if (data.indexOf("sia://") === 0) {
+            result.data.push("redirect=https://" + SkynetSettings.get("portal") + "/" + data.substring(6));
+        }
+
         // fuzzy match skylink (IMO this is poor; a skylink= TXT records is more precise)
         else if (Boolean(data.match(/^[a-zA-Z0-9_-]{46}/)) === true) {
             result.data.push("redirect=https://" + SkynetSettings.get("portal") + "/" + data);

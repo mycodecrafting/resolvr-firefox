@@ -29,7 +29,7 @@ const requestHandler = async (request) => {
     }
 
     // prevent recursion
-    if (url.hostname === "easyhandshake.com") {
+    if (url.hostname === "dns.resolvr.info") {
         return;
     }
 

@@ -15,6 +15,58 @@ class Resolvr {
         return dnsResult.expires < Date.now();
     }
 
+    async lookup(hostname, type="A", dohUrl="https://dns.resolvr.info/dns-query") {
+        const now = Date.now();
+        let dnsResult = { data: [], expires: now + (60 * 1000) };
+
+        let lookup = new URL(dohUrl);
+        lookup.searchParams.set("name", hostname);
+        lookup.searchParams.set("type", type);
+
+        let r = await fetch(lookup.href);
+        if (r.status === 200) {
+            const response = await r.json();
+            if (response.hasOwnProperty("Answer") === true) {
+                let data = [];
+                let lowestTTL = false;
+
+                response.Answer.forEach(function(answer) {
+                    if (answer.type === this.typeConst(type)) {
+                        let d = answer.data;
+
+                        if (d.indexOf('"') === 0) {
+                            d = d.substring(1, d.length - 1);
+                        }
+
+                        data.push(d)
+
+                        if (lowestTTL === false || answer.TTL < lowestTTL) {
+                            lowestTTL = answer.TTL;
+                        }
+                    }
+                }.bind(this));
+
+                dnsResult.data = data;
+                dnsResult.expires = now + (lowestTTL * 1000);
+
+            // Set TTL from authority record
+            } else if (response.hasOwnProperty("Authority") === true) {
+                dnsResult.expires = now + (response.Authority[0].TTL * 1000);
+            }
+        }
+
+        // lokup failed on default dohUrl
+        if (dohUrl === "https://dns.resolvr.info/dns-query" && dnsResult.data.length === 0) {
+            const tld = hostname.split(".").pop();
+            // Lookup HNS TXT records in DNS authoritative server
+            if (type === "TXT" && !IANA_TLDS.includes(tld)) {
+                dnsResult = await this.lookup(hostname, type, "https://dns.resolvr.info/dns-auth-query");
+            }
+        }
+
+        return dnsResult;
+    }
+
     async resolv(hostname, type="A") {
         // Resolv from cache
         const cacheKey = hostname + ":" + type;
@@ -22,44 +74,7 @@ class Resolvr {
 
         // not in cache or expired
         if (!dnsResult || this.isExpired(dnsResult)) {
-            const now = Date.now();
-            dnsResult = { data: [], expires: now + (60 * 1000) };
-
-            let lookup = new URL("https://easyhandshake.com:8053/dns-query");
-            lookup.searchParams.set("name", hostname);
-            lookup.searchParams.set("type", type);
-
-            let r = await fetch(lookup.href);
-            if (r.status === 200) {
-                const response = await r.json();
-                if (response.hasOwnProperty("Answer") === true) {
-                    let data = [];
-                    let lowestTTL = false;
-
-                    response.Answer.forEach(function(answer) {
-                        if (answer.type === this.typeConst(type)) {
-                            let d = answer.data;
-
-                            if (d.indexOf('"') === 0) {
-                                d = d.substring(1, d.length - 1);
-                            }
-
-                            data.push(d)
-
-                            if (lowestTTL === false || answer.TTL < lowestTTL) {
-                                lowestTTL = answer.TTL;
-                            }
-                        }
-                    }.bind(this));
-
-                    dnsResult.data = data;
-                    dnsResult.expires = now + (lowestTTL * 1000);
-                } else if (response.hasOwnProperty("Authority") === true) {
-                    // Set TTL from authority record
-                    dnsResult.expires = now + (response.Authority[0].TTL * 1000);
-                }
-            }
-
+            dnsResult = await this.lookup(hostname, type);
             this.cache.set(cacheKey, dnsResult);
         }
 
