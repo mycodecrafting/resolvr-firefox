@@ -8,7 +8,7 @@ Firefox browser extension to resolve Handshake domains + DNS TXT metadata record
 
 ## Current Release
 
-  * [Version 1.0.0](https://addons.mozilla.org/en-US/firefox/addon/resolvr/)
+  * [Version 1.1.0](https://addons.mozilla.org/en-US/firefox/addon/resolvr/)
 
 ## Handshake TLDs
 
